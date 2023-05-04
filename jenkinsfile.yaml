@@ -1,12 +1,22 @@
-jenkins:
-  systemMessage: "Controlled by Configuration as Code"
+
 jobs:
   - script: >
-        multibranchPipelineJob('configuration-as-code') {
-        branchSources {
-                git {
-                id = 'configuration-as-code'
-                remote('https://github.com/jenkinsci/configuration-as-code-plugin.git')
+      folder('testjobs')
+  - script: >
+      pipelineJob('testjobs/default-agent') {
+        definition {
+          cps {
+            script("""\
+              pipeline {
+                agent any
+                stages {
+                  stage ('test') {
+                    steps {
+                      echo "hello"
+                    }
+                  }
                 }
+              }""".stripIndent())
+          }   
+        }
       }
-}
