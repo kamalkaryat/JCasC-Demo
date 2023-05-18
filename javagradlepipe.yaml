@@ -34,7 +34,6 @@ jobs:
                     steps{ 
                       withCredentials([usernamePassword(credentialsId: 'dockerhubcreds', passwordVariable: 'password', usernameVariable: 'username')]) { 
                         sh """
-                        sudo chmod 666 /var/run/docker.sock
                         docker login -u $username -p $password
                         """
                       } 
@@ -44,7 +43,6 @@ jobs:
                   stage('Build app') {
                     steps {
                       sh """
-                      sudo chmod +x gradlew
                       docker build -t ${project_image_name}:${tag} .
                       """
                     }
@@ -61,9 +59,8 @@ jobs:
         
                   stage('Deployment') {
                     steps {
-                      sh """
-                      sed -i "s/latest/${tag}/" ${deployment_name}
-                      microk8s kubectl apply -f ${deployment_name}
+                      sh """             
+                      kubectl apply -f ${deployment_name}
                       """
                     }
                   }
