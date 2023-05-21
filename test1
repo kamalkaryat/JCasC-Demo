@@ -1,0 +1,13 @@
+jenkins:
+  pipelines:
+    - script: |
+        pipeline {
+          agent any
+          stages {
+            stage('Hello'){
+              step {
+                echo "hello"
+              }
+            }
+          }
+        }
