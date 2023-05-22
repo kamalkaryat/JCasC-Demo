@@ -1,0 +1,72 @@
+jobs:
+  - script: >
+      pipelineJob('testjobs/default-agent') {
+        definition {
+          cps {
+            script("""\
+              pipeline {
+                    agent {
+                      kubernetes {
+                        yaml '''
+              apiVersion: v1
+              kind: Pod
+              spec:
+                containers:
+                - name: shell
+                  image: ubuntu
+                  command:
+                  - sleep
+                  args:
+                  - infinity
+                - name: docker
+                  image: docker:latest
+                  command:
+                  - cat
+                  tty: true
+                  volumeMounts:
+                  - mountPath: /var/run/docker.sock
+                    name: docker-sock
+                volumes:
+                - name: docker-sock
+                  hostPath:
+                    path: /var/run/docker.sock
+              '''
+                        defaultContainer 'shell'
+                      }
+                  }
+                  stages {
+                      stage('Clone repository') {
+                          steps {
+                              sleep(time: 20, unit: 'SECONDS')
+                              git branch: 'main', changelog: false, credentialsId: 'githubcreds', poll: false, url: 'https://github.com/kamalkaryat/java-with-gradle.git'
+                          }
+                      }
+                      
+                      stage('Script permission') {
+                          steps {
+                              container('shell'){
+                                  sh '''
+                                  chmod +x gradlew
+                                  '''
+                              }
+                          }
+                      }
+                      stage ('Image workflow'){ 
+                          steps{
+                          container('docker'){
+                              withCredentials([usernamePassword(credentialsId: 'dockerhubcreds', passwordVariable: 'password', usernameVariable: 'username')]) { 
+                                sh '''
+                                docker login -u \$username -p \$password
+                                docker build -t ksk-java-test:latest .
+                                docker tag ksk-java-test:latest k2developer/testrepo:8.0
+                                docker push k2developer/testrepo:8.0
+                                '''
+                              }
+                            } 
+                          } 
+                      }
+                  }
+              }""".stripIndent())
+          }   
+        }
+      }
