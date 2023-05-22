@@ -1,8 +1,6 @@
 jobs:
   - script: >
-      folder('testjobs')
-  - script: >
-      pipelineJob('testjobs/default-agent') {
+      pipelineJob('paramtestjob') {
         definition {
           cps {
             script("""\
