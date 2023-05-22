@@ -35,22 +35,13 @@ jobs:
                       }
                   }
 
-                  parameters {
-                    stringParam('deployment_file_name', 'deploy.yaml', 'my description')
-                    stringParam('d_username', 'k2developer', 'dockerhub username')
-                    stringParam('d_repo', 'testrepo', 'dockerhub repo name')
-                    stringParam('project_image_name', 'javagradleapp-img', 'docker image name for the project')
-                    stringParam('tag', '6.0', 'tag for project image')
+                  environment{
+                      deployment_name="deploy.yaml"
+                      dockerhub_username="k2developer"
+                      repo="testrepo"
+                      project_image_name="javagradleapp-img"
+                      tag="6.0"
                   }
-
-                  environmentVariables {
-                    env('deployment_name', '\${params.deployment_file_name}')
-                    env('dockerhub_username', '\${params.d_username}')
-                    env('repo', '\${params.d_repo}')
-                    env('project_image_name', '\${params.project_image_name}')
-                    env('tag', '\${params.tag}')
-                  }
-
                   stages {
                       stage('Clone repository') {
                           steps {
