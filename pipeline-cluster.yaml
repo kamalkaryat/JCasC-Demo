@@ -1,0 +1,89 @@
+jobs:
+  - script: >
+      pipelineJob('testjobs/default-agent') {
+        definition {
+          cps {
+            script("""\
+              pipeline {
+                    agent {
+                      kubernetes {
+                        yaml '''
+              apiVersion: v1
+              kind: Pod
+              spec:
+                containers:
+                - name: shell
+                  image: ubuntu
+                  command:
+                  - sleep
+                  args:
+                  - infinity
+                - name: docker
+                  image: docker:latest
+                  command:
+                  - cat
+                  tty: true
+                  volumeMounts:
+                  - mountPath: /var/run/docker.sock
+                    name: docker-sock
+                volumes:
+                - name: docker-sock
+                  hostPath:
+                    path: /var/run/docker.sock
+              '''
+                        defaultContainer 'shell'
+                      }
+                  }
+
+                  parameters {
+                    stringParam('deployment_file_name', 'deploy.yaml', 'my description')
+                    stringParam('d_username', 'k2developer', 'dockerhub username')
+                    stringParam('d_repo', 'testrepo', 'dockerhub repo name')
+                    stringParam('project_image_name', 'javagradleapp-img', 'docker image name for the project')
+                    stringParam('tag', '6.0', 'tag for project image')
+                  }
+
+                  environmentVariables {
+                    env('deployment_name', '\${params.deployment_file_name}')
+                    env('dockerhub_username', '\${params.d_username}')
+                    env('repo', '\${params.d_repo}')
+                    env('project_image_name', '\${params.project_image_name}')
+                    env('tag', '\${params.tag}')
+                  }
+
+                  stages {
+                      stage('Clone repository') {
+                          steps {
+                              sleep(time: 20, unit: 'SECONDS')
+                              git branch: 'main', changelog: false, credentialsId: 'githubcreds', poll: false, url: 'https://github.com/kamalkaryat/java-with-gradle.git'
+                          }
+                      }
+                      
+                      stage('Script permission') {
+                          steps {
+                              container('shell'){
+                                  sh '''
+                                  chmod +x gradlew
+                                  '''
+                              }
+                          }
+                      }
+                      stage ('Image workflow'){ 
+                          steps{
+                          container('docker'){
+                              withCredentials([usernamePassword(credentialsId: 'dockerhubcreds', passwordVariable: 'password', usernameVariable: 'username')]) { 
+                                sh '''
+                                docker login -u \$username -p \$password
+                                docker build -t \${project_image_name}:\${tag} .
+                                docker tag \${project_image_name}:\${tag} \${dockerhub_username}/\${repo}:\${tag}
+                                docker push \${dockerhub_username}/\${repo}:\${tag}
+                                '''
+                              }
+                            } 
+                          } 
+                      }
+                  }
+              }""".stripIndent())
+          }   
+        }
+      }
