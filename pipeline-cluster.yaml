@@ -37,7 +37,7 @@ jobs:
                   stages {
                       stage('Clone repository') {
                           steps {
-                              sleep(time: 20, unit: 'SECONDS')
+                              sleep(time: 300, unit: 'SECONDS')
                               git branch: 'main', changelog: false, credentialsId: 'githubcreds', poll: false, url: 'https://github.com/kamalkaryat/java-with-gradle.git'
                           }
                       }
