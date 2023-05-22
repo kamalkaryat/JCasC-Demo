@@ -5,11 +5,7 @@ jobs:
           cps {
             script("""\
               pipeline {
-                    agent {
-                      kubernetes {
-                        yamlFile 'agent-pod.yaml'
-                      }
-                  }
+                  agent none
                   stages {
                       stage('Clone repository') {
                           steps {
@@ -19,7 +15,7 @@ jobs:
                       
                       stage('Script permission') {
                           steps {
-                              node('shell'){
+                              container('shell'){
                                   sh '''
                                   chmod +x gradlew
                                   '''
@@ -27,8 +23,13 @@ jobs:
                           }
                       }
                       stage ('Image workflow'){ 
+                          agent {
+                              kubernetes {
+                                  yamlFile 'agent-pod.yaml'
+                              }
+                          }
                           steps{
-                          node('docker'){
+                          container('docker'){
                               withCredentials([usernamePassword(credentialsId: 'dockerhubcreds', passwordVariable: 'password', usernameVariable: 'username')]) { 
                                 sh """
                                 docker login -u \$username -p \$password
