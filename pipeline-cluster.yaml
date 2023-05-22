@@ -1,0 +1,48 @@
+jobs:
+  - script: >
+      pipelineJob('testjobs/default-agent') {
+        definition {
+          cps {
+            script("""\
+              pipeline {
+                    agent {
+                      kubernetes {
+                        yamlFile 'agent-pod.yaml'
+                        defaultContainer 'shell'
+                      }
+                  }
+                  stages {
+                      stage('Clone repository') {
+                          steps {
+                              git branch: 'main', changelog: false, credentialsId: 'githubcreds', poll: false, url: 'https://github.com/kamalkaryat/java-with-gradle.git'
+                          }
+                      }
+                      
+                      stage('Script permission') {
+                          steps {
+                              container('shell'){
+                                  sh '''
+                                  chmod +x gradlew
+                                  '''
+                              }
+                          }
+                      }
+                      stage ('Image workflow'){ 
+                          steps{
+                          container('docker'){
+                              withCredentials([usernamePassword(credentialsId: 'dockerhubcreds', passwordVariable: 'password', usernameVariable: 'username')]) { 
+                                sh '''
+                                docker login -u $username -p $password
+                                docker build -t ksk-java-test:latest .
+                                docker tag ksk-java-test:latest k2developer/testrepo:7.0
+                                docker push k2developer/testrepo:7.0
+                                '''
+                              }
+                            } 
+                          } 
+                      }
+                  }
+              }""".stripIndent())
+          }   
+        }
+      }
