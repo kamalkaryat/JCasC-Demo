@@ -1,6 +1,6 @@
 jobs:
   - script: >
-      pipelineJob('testjobs') {
+      pipelineJob('testjob') {
         definition {
           cps {
             script("""\
