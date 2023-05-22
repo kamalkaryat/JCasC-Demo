@@ -9,8 +9,8 @@ jobs:
                 parameters {
                   string(name:'deployment_file_name', defaultValue: 'deploy.yaml', description: 'kubernetes deployment file')
                 }
-                environment{
-                  deployment_name="^${params.deployment_file_name}"
+                environmentVariables {
+                    env('deployment_name', '\${params.deployment_file_name}')
                 }
                 stages {
                   stage ('test') {
