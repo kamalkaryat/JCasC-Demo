@@ -20,7 +20,7 @@ jobs:
                       
                       stage('Script permission') {
                           steps {
-                              container('shell'){
+                              node('shell'){
                                   sh '''
                                   chmod +x gradlew
                                   '''
@@ -29,7 +29,7 @@ jobs:
                       }
                       stage ('Image workflow'){ 
                           steps{
-                          container('docker'){
+                          node('docker'){
                               withCredentials([usernamePassword(credentialsId: 'dockerhubcreds', passwordVariable: 'password', usernameVariable: 'username')]) { 
                                 sh '''
                                 docker login -u $username -p $password
