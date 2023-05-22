@@ -66,12 +66,12 @@ jobs:
                           steps{
                           container('docker'){
                               withCredentials([usernamePassword(credentialsId: 'dockerhubcreds', passwordVariable: 'password', usernameVariable: 'username')]) { 
-                                sh '''
-                                docker login -u $username -p $password
+                                sh """
+                                docker login -u \$username -p \$password
                                 docker build -t ksk-java-test:latest .
                                 docker tag ksk-java-test:latest k2developer/testrepo:8.0
                                 docker push k2developer/testrepo:8.0
-                                '''
+                                """
                               }
                             } 
                           } 
