@@ -7,7 +7,7 @@ jobs:
               pipeline {
                 agent any
                 parameters {
-                  stringParam('deployment_file_name', 'deploy.yaml', 'my description')
+                  string(name:'deployment_file_name', defaultValue: 'deploy.yaml', description: 'kubernetes deployment file')
                 }
                 environmentVariables{
                   deployment_name='\${params.deployment_file_name}'
