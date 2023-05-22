@@ -63,12 +63,12 @@ jobs:
                           steps{
                           container('docker'){
                               withCredentials([usernamePassword(credentialsId: 'dockerhubcreds', passwordVariable: 'password', usernameVariable: 'username')]) { 
-                                sh '''
+                                sh """
                                 docker login -u \$username -p \$password
                                 docker build -t \$project_image_name:\$tag .
                                 docker tag \$project_image_name:\$tag \$dockerhub_username/\$repo:\$tag
                                 docker push \$dockerhub_username/\$repo:\$tag
-                                '''
+                                """
                               }
                             } 
                           } 
