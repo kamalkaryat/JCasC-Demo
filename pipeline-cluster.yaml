@@ -18,6 +18,8 @@ jobs:
                   - sleep
                   args:
                   - infinity
+                - name: kube
+                  image: k2developer/kubectl:latest
                 - name: docker
                   image: docker:latest
                   command:
@@ -45,7 +47,6 @@ jobs:
                   stages {
                       stage('Clone repository') {
                           steps {
-                              sleep(time: 300, unit: 'SECONDS')
                               git branch: 'main', changelog: false, credentialsId: 'githubcreds', poll: false, url: 'https://github.com/kamalkaryat/java-with-gradle.git'
                           }
                       }
@@ -72,6 +73,33 @@ jobs:
                               }
                             } 
                           } 
+                      }
+                      stage('update tag'){
+                        steps{
+                          container('shell'){
+                            script{
+                              sh """
+                              sed -i "s/latest/\$tag/" \$deployment_name
+                              """
+                            }
+                          }
+                        }
+                      }
+        
+                      stage('deployment'){
+                        steps{
+                          container('kube'){
+                            withCredentials([string(credentialsId: 'ksk-sa-token', variable: 'token')]) {
+                              sh """
+                              cd /home
+                              cp \${env.WORKSPACE}/\$deployment_name .
+                              ls
+                              ./kubectl version --token=\$token
+                              ./kubectl apply -f \$deployment_name --token=\$token
+                              """
+                            }
+                          }
+                        }
                       }
                   }
               }""".stripIndent())
