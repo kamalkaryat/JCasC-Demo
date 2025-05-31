@@ -1,5 +1,5 @@
 jobs:
-  - script: >
+  - script: |
       pipelineJob('javagradlepipe') {
         definition {
           cps {
