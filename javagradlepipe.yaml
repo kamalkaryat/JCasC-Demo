@@ -12,7 +12,7 @@ jobs:
                   string(name: 'd_username', defaultValue: 'k2developer', description: 'dockerhub username')
                   string(name: 'd_repo', defaultValue: 'testrepo', description: 'dockerhub repo name')
                   string(name: 'project_image_name', defaultValue: 'javagradleapp-img', description: 'docker image name for the project')
-                  string(name: 'tag', defaultValue: '6.0', description: 'tag for project image')
+                  string(name: 'tag', defaultValue: '8.0', description: 'tag for project image')
                 }
 
                 environment{
