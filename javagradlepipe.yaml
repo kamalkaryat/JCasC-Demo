@@ -1,5 +1,5 @@
 jobs:
-  - script: >
+  - script: |
       pipelineJob('javagradleapp/default-agent') {
         definition {
           cps {
