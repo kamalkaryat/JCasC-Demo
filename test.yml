@@ -1,0 +1,83 @@
+jobs:
+  - script: >
+      pipelineJob('javagradlepipe') {
+        definition {
+          cps {
+            script("""\
+              pipeline {
+                    agent {
+                      kubernetes {
+                        yaml '''
+              apiVersion: v1
+              kind: Pod
+              spec:
+                containers:
+                - name: shell
+                  image: ubuntu
+                  command:
+                  - sleep
+                  args:
+                  - infinity
+                - name: kube
+                  image: k2developer/kubectl:latest
+                - name: docker
+                  image: docker:latest
+                  command:
+                  - cat
+                  tty: true
+                  volumeMounts:
+                  - mountPath: /var/run/docker.sock
+                    name: docker-sock
+                volumes:
+                - name: docker-sock
+                  hostPath:
+                    path: /var/run/docker.sock
+              '''
+                        defaultContainer 'shell'
+                      }
+                  }
+
+                  environment{
+                      deployment_name="deploy.yaml"
+                      dockerhub_username="k2developer"
+                      repo="testrepo"
+                      project_image_name="javagradleapp-img"
+                      tag="6.0"
+                  }
+                  stages {
+                      stage('Clone repository') {
+                          steps {
+                              git branch: 'main', changelog: false, credentialsId: 'githubcreds', poll: false, url: 'https://github.com/kamalkaryat/java-with-gradle.git'
+                          }
+                      }
+                      
+                      stage('Script permission') {
+                          steps {
+                              container('shell'){
+                                  sh '''
+                                  chmod +x gradlew
+                                  '''
+                              }
+                          }
+                      }
+
+                      stage('deployment'){
+                        steps{
+                          container('kube'){
+                            withCredentials([string(credentialsId: 'ksk-sa-token', variable: 'token')]) {
+                              sh """
+                              cd /home
+                              cp \${env.WORKSPACE}/\$deployment_name .
+                              ls
+                              ./kubectl version --token=\$token
+                              ./kubectl apply -f \$deployment_name --token=\$token
+                              """
+                            }
+                          }
+                        }
+                      }
+                  }
+              }""".stripIndent())
+          }   
+        }
+      }
